@@ -9,6 +9,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModel
 import com.example.video_wall_client.databinding.ActivityMainBinding
 import androidx.activity.viewModels
+import GlobalState
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
