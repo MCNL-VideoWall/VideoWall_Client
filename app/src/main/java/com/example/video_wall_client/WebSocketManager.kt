@@ -11,12 +11,13 @@ object WebSocketManager{
         onMessageListener = listener
     }
 
-    fun connect(url: String){
-        val request = Request.Builder().url(url).build()
+    fun connect(url: String, onConnect: () -> Unit){
+        val request = Request.Builder().url("ws://${url}:8000/ws").build()
         val listener = object : WebSocketListener(){
             override fun onOpen(ws: WebSocket, response: Response){
                 webSocket = ws
                 Log.d("SocketManager", "connect success")
+                onConnect()
             }
 
             override fun onMessage(ws: WebSocket, text: String){
