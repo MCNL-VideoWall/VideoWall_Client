@@ -1,10 +1,10 @@
 import android.util.Log
 import okhttp3.*
+import org.json.JSONObject
 
 object WebSocketManager{
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient()
-    //private
 
     private var onMessageListener: ((String) -> Unit)? = null
 
@@ -25,7 +25,22 @@ object WebSocketManager{
             override fun onMessage(ws: WebSocket, text: String){
                 Log.d("SocketManager", "message: $text")
 
+                // JSON 메시지 type별 분류
 
+                val jsonObject = JSONObject(text)
+
+                val msgType: String = jsonObject["type"].toString()
+                val msgData: String = jsonObject["data"].toString()
+
+                when(msgType){
+                    "WELCOME" -> MessageManager.sessionView()
+                    "SESSION_LIST_RES" -> MessageManager.sessionListView()
+                    // "SESSION_CREATED" ->
+                    // "SESSION_JOINED" ->
+                    // "SHOW_MARKER" ->
+                    // "START_PLAYBACK" ->
+                    // "ERROR" ->
+                }
 
                 onMessageListener?.invoke(text)
             }
