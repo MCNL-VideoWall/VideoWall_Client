@@ -25,5 +25,11 @@ class MainActivity : AppCompatActivity() {
         binding.btnSend.setOnClickListener{
             broadcastModel.broadcastMessage(message)
         }
+
+        // connet()
+        // connet 직후 uuid랑 HELLO 메시지 보내기
+
+        // data cmd 추출
+        // when()
     }
 }
