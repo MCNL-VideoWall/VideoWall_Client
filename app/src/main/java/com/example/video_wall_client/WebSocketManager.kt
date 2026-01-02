@@ -26,22 +26,7 @@ object WebSocketManager{
                 Log.d("SocketManager", "message: $text")
 
                 // JSON 메시지 type별 분류
-
-                val jsonObject = JSONObject(text)
-
-                val msgType: String = jsonObject["type"].toString()
-                val msgData: String = jsonObject["data"].toString()
-
-                when(msgType){
-                    "WELCOME" -> MessageManager.sessionView()
-                    "SESSION_LIST_RES" -> MessageManager.sessionListView()
-                    // "SESSION_CREATED" ->
-                    // "SESSION_JOINED" ->
-                    // "SHOW_MARKER" ->
-                    // "START_PLAYBACK" ->
-                    // "ERROR" ->
-                }
-
+                MessageManager.onMessageReceived(text)
                 onMessageListener?.invoke(text)
             }
 
