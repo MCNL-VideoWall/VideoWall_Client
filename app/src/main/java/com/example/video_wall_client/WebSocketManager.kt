@@ -4,6 +4,7 @@ import okhttp3.*
 object WebSocketManager{
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient()
+    //private
 
     private var onMessageListener: ((String) -> Unit)? = null
 
@@ -12,7 +13,8 @@ object WebSocketManager{
     }
 
     fun connect(url: String, onConnect: () -> Unit){
-        val request = Request.Builder().url("ws://${url}:8000/ws").build()
+        Log.d("SocketManager", "url: $url, uuid: ${GlobalState.clientUuid}")
+        val request = Request.Builder().url("ws://$url:8000/ws/${GlobalState.clientUuid}").build()
         val listener = object : WebSocketListener(){
             override fun onOpen(ws: WebSocket, response: Response){
                 webSocket = ws
@@ -22,6 +24,8 @@ object WebSocketManager{
 
             override fun onMessage(ws: WebSocket, text: String){
                 Log.d("SocketManager", "message: $text")
+
+
 
                 onMessageListener?.invoke(text)
             }

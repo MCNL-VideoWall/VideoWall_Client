@@ -13,11 +13,16 @@ import java.util.UUID
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val message: String = "VIDEO_WALL_CONNECT_REQUEST"
+
     private val randomUUID: String = UUID.randomUUID().toString()
+
+
 
     private val broadcastModel: MainBroadcastModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        GlobalState.clientUuid = randomUUID
+
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -29,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         broadcastModel.serverIP.observe(this){ip ->
             if(!ip.isNullOrEmpty()){
                 GlobalState.serverIP = ip
+
                 Log.d("MainActivity*", "serverIP: $ip")
 
                 connectWebSocket()
@@ -44,7 +50,10 @@ class MainActivity : AppCompatActivity() {
         // connet 직후 uuid랑 HELLO 메시지 보내기
         WebSocketManager.setListener { message -> runOnUiThread{
             Log.d("MainActivity*", "message: $message")
+
         } }
+
+
 
         WebSocketManager.connect(targetIP){
             Log.d("MainActivity*", "connect success")
