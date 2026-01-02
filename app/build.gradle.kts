@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.video_wall_client"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.video_wall_client"
@@ -52,4 +52,5 @@ dependencies {
 
     implementation ("com.squareup.okhttp3:okhttp:3.12.12")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation("androidx.activity:activity-ktx:1.8.2")
 }
