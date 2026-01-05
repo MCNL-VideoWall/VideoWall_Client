@@ -5,10 +5,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.*
 import GlobalState
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 
 class MainBroadcastModel: ViewModel(){
     private val PORT = 65535
     private val TIMEOUT_MS = 3000
+
+    private val _serverIP = MutableLiveData<String>()
+    val serverIP: LiveData<String> get() = _serverIP
 
     fun broadcastMessage(msg: String){
         viewModelScope.launch(Dispatchers.IO){
@@ -32,10 +37,12 @@ class MainBroadcastModel: ViewModel(){
 
                 socket.receive(receivedPacket)
 
-                val serverIp = receivedPacket.address.hostAddress
+                val receivedIP = receivedPacket.address.hostAddress
                 val message = String(receivedPacket.data, 0, receivedPacket.length)
 
-                Log.d("Discovery", "Find ServerAddress! IP: $serverIp, Msg: $message")
+                Log.d("Discovery*", "Find ServerAddress! IP: ${receivedIP}, Msg: $message")
+
+                _serverIP.postValue(receivedIP)
 
             } catch (e: SocketTimeoutException) {
                 Log.e("Broadcast", "3second. (Timeout)")
