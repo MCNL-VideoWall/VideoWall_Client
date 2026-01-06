@@ -1,17 +1,18 @@
-package com.example.video_wall_client
+package com.example.video_wall_client.activity
 
-import MainBroadcastModel
+import com.example.video_wall_client.viewmodel.MainBroadcastModel
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.video_wall_client.databinding.ActivityMainBinding
 import androidx.activity.viewModels
-import GlobalState
-import MessageManager
-import SessionData
-import WebSocketManager
+import com.example.video_wall_client.data.GlobalState
+import com.example.video_wall_client.viewmodel.MessageManager
+import com.example.video_wall_client.data.SessionFormat
+import com.example.video_wall_client.viewmodel.WebSocketManager
 import android.util.Log
 import java.util.UUID
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.video_wall_client.SessionAdapter
 
 class MainActivity : AppCompatActivity(), MessageManager.MessageListener {
     private lateinit var binding: ActivityMainBinding
@@ -102,7 +103,7 @@ class MainActivity : AppCompatActivity(), MessageManager.MessageListener {
 
     }
 
-    override fun onSessionListReceived(sessionList: List<SessionData>) {
+    override fun onSessionListReceived(sessionList: List<SessionFormat>) {
         Log.d("MainActivity", "Session list arrive: ${sessionList.size}개")
 
         sessionList.forEach {

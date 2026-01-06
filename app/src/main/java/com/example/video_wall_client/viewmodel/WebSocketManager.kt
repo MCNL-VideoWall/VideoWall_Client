@@ -1,6 +1,8 @@
+package com.example.video_wall_client.viewmodel
+
+import com.example.video_wall_client.data.GlobalState
 import android.util.Log
 import okhttp3.*
-import org.json.JSONObject
 
 object WebSocketManager{
     private var webSocket: WebSocket? = null

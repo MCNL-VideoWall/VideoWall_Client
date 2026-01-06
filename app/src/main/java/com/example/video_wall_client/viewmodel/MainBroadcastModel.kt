@@ -1,10 +1,11 @@
+package com.example.video_wall_client.viewmodel
+
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.*
-import GlobalState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
@@ -29,7 +30,7 @@ class MainBroadcastModel: ViewModel(){
                 val packet = DatagramPacket(data, data.size, address, PORT)
                 socket.send(packet)
 
-                Log.d("MainBroadcastModel", "sendBroadcastMessage: $msg")
+                Log.d("com.example.video_wall_client.viewmodel.MainBroadcastModel", "sendBroadcastMessage: $msg")
 
 
                 val buffer = ByteArray(1024)

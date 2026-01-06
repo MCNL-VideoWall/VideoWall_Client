@@ -1,3 +1,6 @@
+package com.example.video_wall_client.viewmodel
+
+import com.example.video_wall_client.data.SessionFormat
 import org.json.JSONObject
 import org.json.JSONArray
 import android.util.Log
@@ -5,7 +8,7 @@ import android.util.Log
 object MessageManager{
 
     interface MessageListener {
-        fun onSessionListReceived(sessionList: List<SessionData>)
+        fun onSessionListReceived(sessionList: List<SessionFormat>)
         fun onSessionCreated(sessionID: String)
         fun onSessionJoined(sessionID: String)
         // fun onSessionJoined(clientID: Int, sessionList: List<SessionData>)
@@ -97,7 +100,7 @@ object MessageManager{
 
     fun parseSessionList(data: String){
         // sessionList: Dict 파싱 작업
-        val parsedList = ArrayList<SessionData>()
+        val parsedList = ArrayList<SessionFormat>()
         try {
             val jsonArray = JSONArray(data)
 
@@ -108,12 +111,12 @@ object MessageManager{
                 val name = obj.optString("sessionName", "Unknown Room")
                 val count = obj.optInt("currentClientCount", 0)
 
-                parsedList.add(SessionData(id, name, count))
+                parsedList.add(SessionFormat(id, name, count))
             }
 
             listener?.onSessionListReceived(parsedList)
         } catch (e: Exception){
-            Log.e("MessageManager", "Error parsing session list: ${e.message}")
+            Log.e("com.example.video_wall_client.viewmodel.MessageManager", "Error parsing session list: ${e.message}")
         }
     }
 

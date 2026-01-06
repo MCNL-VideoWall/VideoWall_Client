@@ -4,16 +4,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.video_wall_client.databinding.ItemSessionBinding
-import SessionData
+import com.example.video_wall_client.data.SessionFormat
 
 // 매개변수: 방을 클릭했을 때 실행할 함수(onClick)를 받아옴
-class SessionAdapter(private val onClick: (SessionData) -> Unit) :
+class SessionAdapter(private val onClick: (SessionFormat) -> Unit) :
     RecyclerView.Adapter<SessionAdapter.SessionViewHolder>() {
 
-    private var sessionList: List<SessionData> = listOf()
+    private var sessionList: List<SessionFormat> = listOf()
 
     // 데이터를 갱신하는 함수
-    fun submitList(newList: List<SessionData>) {
+    fun submitList(newList: List<SessionFormat>) {
         sessionList = newList
         notifyDataSetChanged() // 리스트 갱신 알림
     }
@@ -31,7 +31,7 @@ class SessionAdapter(private val onClick: (SessionData) -> Unit) :
     override fun getItemCount(): Int = sessionList.size
 
     inner class SessionViewHolder(private val binding: ItemSessionBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(session: SessionData) {
+        fun bind(session: SessionFormat) {
             // 데이터 연결
             binding.tvSessionName.text = session.sessionName
             binding.tvSessionId.text = "ID: ${session.sessionId}"
