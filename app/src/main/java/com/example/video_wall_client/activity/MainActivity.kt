@@ -29,9 +29,7 @@ class MainActivity : AppCompatActivity(){
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnSend.setOnClickListener{
-            broadcastModel.broadcastMessage(message)
-        }
+        broadcastModel.broadcastMessage(message)
 
         broadcastModel.serverIP.observe(this){ip ->
             if(!ip.isNullOrEmpty()){
