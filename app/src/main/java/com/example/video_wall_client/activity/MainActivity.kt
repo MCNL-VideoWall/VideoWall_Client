@@ -1,5 +1,6 @@
 package com.example.video_wall_client.activity
 
+import android.content.Intent
 import com.example.video_wall_client.viewmodel.MainBroadcastModel
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -10,16 +11,18 @@ import com.example.video_wall_client.viewmodel.MessageManager
 import com.example.video_wall_client.viewmodel.WebSocketManager
 import android.util.Log
 import android.view.View
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import org.json.JSONObject
 import java.util.UUID
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(){
     private lateinit var binding: ActivityMainBinding
     private val message: String = "VIDEO_WALL_CONNECT_REQUEST"
 
     private val randomUUID: String = UUID.randomUUID().toString()
-
-
     private val broadcastModel: MainBroadcastModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +48,32 @@ class MainActivity : AppCompatActivity(){
             }
         }
 
+        collectNavigationEvents()
+
+    }
+
+    private fun collectNavigationEvents() {
+        lifecycleScope.launch {
+            // STARTED 상태일 때만 수집 (앱이 백그라운드로 가면 중지 -> 자원 절약)
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                Log.d("MainActivity*", "collectNavigationEvents")
+                MessageManager.eventFlow.collect { event ->
+                    handleNavigationEvent(event)
+                }
+            }
+        }
+    }
+
+    private fun handleNavigationEvent(event: String) {
+        when (event) {
+             "SHOW_MARKER" -> {
+                // [네비게이션 처리]
+                 Log.d("MainActivity*", "intent")
+                val intent = Intent(this, MarkerActivity::class.java)
+                startActivity(intent)
+                // 필요시 finish()
+            }
+        }
     }
 
     private fun showLoadingState(isLoading: Boolean) {
@@ -64,7 +93,11 @@ class MainActivity : AppCompatActivity(){
         WebSocketManager.setListener { message -> runOnUiThread{
             Log.d("MainActivity*", "message: $message")
             MessageManager.onMessageReceived(message)
+
+
             updateUI()
+
+
         } }
 
         WebSocketManager.connect(targetIP){

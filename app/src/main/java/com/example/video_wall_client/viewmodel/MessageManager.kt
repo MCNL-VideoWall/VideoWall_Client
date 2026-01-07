@@ -1,12 +1,22 @@
 package com.example.video_wall_client.viewmodel
-import ServerResponse
+
+import VideoWallData
 import com.google.gson.Gson
 import org.json.JSONObject
 import org.json.JSONArray
 import android.util.Log
 import com.example.video_wall_client.data.GlobalState
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 object MessageManager{
+
+    private val _eventFlow = MutableSharedFlow<String>(
+        replay = 0,
+        extraBufferCapacity = 1
+    )
+
+    val eventFlow = _eventFlow.asSharedFlow()
 
     fun onMessageReceived(text: String){
         val jsonObject = JSONObject(text)
@@ -15,10 +25,11 @@ object MessageManager{
 
         when(msgType){
             "WELCOME" -> {
-                val data = jsonObject["data"].toString()
+                val data = jsonObject.getJSONObject("data").toString()
                 parseWelcomeData(data)
             }
              "SHOW_MARKER" -> {
+                 Log.d("MessageManager", "SHOW_MARKER")
                  showMarker()
              }
              "START_PLAYBACK" -> {
@@ -33,11 +44,11 @@ object MessageManager{
     fun parseWelcomeData(data: String){
         try {
             val gson = Gson()
-            val response = gson.fromJson(data, ServerResponse::class.java)
+            val response = gson.fromJson(data, VideoWallData::class.java)
 
-            val id = response.data.markerId
-            val ip = response.data.multicastIp
-            val bitmap = response.data.arucoBitmap
+            val id = response.markerId
+            val ip = response.multicastIP
+            val bitmap = response.arucoBitmap
 
             GlobalState.markerId = id
             GlobalState.multicastIP = ip
@@ -60,8 +71,7 @@ object MessageManager{
     }
 
     fun showMarker(){
-
-
+        _eventFlow.tryEmit("SHOW_MARKER")
     }
 
     fun startPlayback(){
