@@ -4,5 +4,7 @@ object GlobalState{
     var serverIP: String? = null
     var clientUuid: String? = null
 
-    // liveList sessionList: main에서 observe
+    var markerId: Int? = null
+    var multicastIP: String? = null
+    var bitmap: List<List<Int>>? = null
 }

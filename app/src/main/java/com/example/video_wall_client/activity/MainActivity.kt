@@ -9,9 +9,9 @@ import com.example.video_wall_client.data.GlobalState
 import com.example.video_wall_client.viewmodel.MessageManager
 import com.example.video_wall_client.viewmodel.WebSocketManager
 import android.util.Log
+import android.view.View
+import org.json.JSONObject
 import java.util.UUID
-import androidx.recyclerview.widget.LinearLayoutManager
-
 
 class MainActivity : AppCompatActivity(){
     private lateinit var binding: ActivityMainBinding
@@ -29,6 +29,9 @@ class MainActivity : AppCompatActivity(){
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        updateUI()
+        showLoadingState(true)
+
         broadcastModel.broadcastMessage(message)
 
         broadcastModel.serverIP.observe(this){ip ->
@@ -36,6 +39,7 @@ class MainActivity : AppCompatActivity(){
                 GlobalState.serverIP = ip
 
                 Log.d("MainActivity*", "serverIP: $ip")
+                showLoadingState(false)
 
                 connectWebSocket()
             }
@@ -43,27 +47,47 @@ class MainActivity : AppCompatActivity(){
 
     }
 
+    private fun showLoadingState(isLoading: Boolean) {
+        if (isLoading) {
+            binding.layoutLoading.visibility = View.VISIBLE
+            binding.layoutConnected.visibility = View.GONE
+        } else {
+            binding.layoutLoading.visibility = View.GONE
+            binding.layoutConnected.visibility = View.VISIBLE
+        }
+    }
+
     fun connectWebSocket(){
 
-        // connet()
         val targetIP = GlobalState.serverIP ?: return
 
-        // connet 직후 uuid랑 HELLO 메시지 보내기
         WebSocketManager.setListener { message -> runOnUiThread{
             Log.d("MainActivity*", "message: $message")
             MessageManager.onMessageReceived(message)
-
+            updateUI()
         } }
 
         WebSocketManager.connect(targetIP){
             Log.d("MainActivity*", "connect success")
-
         }
+
         // data cmd 추출
         // when()
     }
 
+    fun updateUI() {
+        runOnUiThread {
+            // GlobalState에 있는 값을 가져와서 XML(binding)에 꽂아줍니다.
 
+            // 1. 마커 ID 표시
+            val id = GlobalState.markerId
+            binding.tvMarkerId.text = id?.toString() ?: "대기중" // null이면 "대기중" 표시
+
+
+            // 3. 비트맵 처리 (이미지뷰가 있다면)
+            // binding.imageView.setImageBitmap(...)
+        }
+    }
 
 }
 

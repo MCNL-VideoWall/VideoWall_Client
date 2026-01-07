@@ -53,4 +53,5 @@ dependencies {
     implementation ("com.squareup.okhttp3:okhttp:3.12.12")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
     implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation ("com.google.code.gson:gson:2.10.1")
 }
