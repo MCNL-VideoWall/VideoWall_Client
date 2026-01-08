@@ -42,15 +42,13 @@ class MainActivity : AppCompatActivity() {
 
         // broadcastModel의 serverIP가 update되었을 때 이 블록이 실행됨
         broadcastModel.serverIP.observe(this) { ip ->   // observe가 전달해준 값(변경된 serverIP의 값)을 ip라는 이름으로 받음
-            {
-                if (!ip.isNullOrEmpty()) {      // 만약 ip가 유의미한 값일 경우
-                    GlobalState.serverIP = ip       // GlobalState의 serverIP를 ip의 값으로 update
+            if (!ip.isNullOrEmpty()) {      // 만약 ip가 유의미한 값일 경우
+                GlobalState.serverIP = ip       // GlobalState의 serverIP를 ip의 값으로 update
 
-                    Log.d("MainActivity*", "serverIP: $ip")
+                Log.d("MainActivity*", "serverIP: $ip")
 
-                    showLoadingState(false)     // UI 전환
-                    connectWebSocket()          // 서버 IP 확정 이후 WebSocket 연결
-                }
+                showLoadingState(false)     // UI 전환
+                connectWebSocket()          // 서버 IP 확정 이후 WebSocket 연결
             }
         }
 
@@ -63,13 +61,11 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 MessageManager.eventFlow.collect { event ->
-                    {
-                        Log.d("MainActivity*", "Event received: $event")
-                        when (event) {
-                            "SHOW_MARKER" -> {
-                                val intent = Intent(this@MainActivity, MarkerActivity::class.java)
-                                startActivity(intent)
-                            }
+                    Log.d("MainActivity*", "Event received: $event")
+                    when (event) {
+                        "SHOW_MARKER" -> {
+                            val intent = Intent(this@MainActivity, MarkerActivity::class.java)
+                            startActivity(intent)
                         }
                     }
                 }
@@ -82,12 +78,10 @@ class MainActivity : AppCompatActivity() {
         val targetIP = GlobalState.serverIP ?: return
 
         WebSocketManager.setListener { message ->
-            {
-                runOnUiThread {
-                    Log.d("MainActivity*", "message: $message")
-                    MessageManager.onMessageReceived(message)
-                    updateUI()
-                }
+            runOnUiThread {
+                Log.d("MainActivity*", "message: $message")
+                MessageManager.onMessageReceived(message)
+                updateUI()
             }
         }
 
