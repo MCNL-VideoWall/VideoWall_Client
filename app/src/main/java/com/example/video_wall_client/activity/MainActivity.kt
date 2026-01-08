@@ -1,34 +1,35 @@
 package com.example.video_wall_client.activity
 
 import android.content.Intent
-import com.example.video_wall_client.viewmodel.MainBroadcastModel
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import com.example.video_wall_client.databinding.ActivityMainBinding
-import androidx.activity.viewModels
-import com.example.video_wall_client.data.GlobalState
-import com.example.video_wall_client.viewmodel.MessageManager
-import com.example.video_wall_client.viewmodel.WebSocketManager
 import android.util.Log
 import android.view.View
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import org.json.JSONObject
+import com.example.video_wall_client.data.GlobalState
+import com.example.video_wall_client.databinding.ActivityMainBinding
+import com.example.video_wall_client.viewmodel.MainBroadcastModel
+import com.example.video_wall_client.viewmodel.MessageManager
+import com.example.video_wall_client.viewmodel.WebSocketManager
+import kotlinx.coroutines.launch
 import java.util.UUID
-import kotlinx.coroutines.*
 
-class MainActivity : AppCompatActivity(){
+class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val message: String = "VIDEO_WALL_CONNECT_REQUEST"
-
-    private val randomUUID: String = UUID.randomUUID().toString()
+    private val message: String = "VIDEO_WALL_CONNECT_REQUEST"      // 서버 탐색&연결에 사용할 메시지 문자열
+    private val randomUUID: String = UUID.randomUUID().toString()   // 앱 시작 시 랜덤 UUID 생성
     private val broadcastModel: MainBroadcastModel by viewModels()
+    // broadcastModel 변수의 값을 구하는 로직을 viewModels()에게 위임
+    // -> 화면 회전 등으로 인한 onDestroy 이후에도 새 Activity가 자동으로 viewModel()을 호출하면 데이터가 유지됨
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        GlobalState.clientUuid = randomUUID
+        GlobalState.clientUuid = randomUUID     // GlobalState에 UUID 저장
 
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -36,43 +37,62 @@ class MainActivity : AppCompatActivity(){
         showLoadingState(true)
 
         broadcastModel.broadcastMessage(message)
+        // 브로드캐스트로 메시지 송신 후 서버측의 메시지 대기
+        // 서버 메시지 수신 후 _serverIP(private val)를 update -> serverIP도 update됨
 
-        broadcastModel.serverIP.observe(this){ip ->
-            if(!ip.isNullOrEmpty()){
-                GlobalState.serverIP = ip
+        // broadcastModel의 serverIP가 update되었을 때 이 블록이 실행됨
+        broadcastModel.serverIP.observe(this) { ip ->   // observe가 전달해준 값(변경된 serverIP의 값)을 ip라는 이름으로 받음
+            {
+                if (!ip.isNullOrEmpty()) {      // 만약 ip가 유의미한 값일 경우
+                    GlobalState.serverIP = ip       // GlobalState의 serverIP를 ip의 값으로 update
 
-                Log.d("MainActivity*", "serverIP: $ip")
-                showLoadingState(false)
+                    Log.d("MainActivity*", "serverIP: $ip")
 
-                connectWebSocket()
+                    showLoadingState(false)     // UI 전환
+                    connectWebSocket()          // 서버 IP 확정 이후 WebSocket 연결
+                }
             }
         }
 
-        collectNavigationEvents()
+        collectNavigationEvents()   // 내비게이션 이벤트를 수집, 발생한 이벤트가 "SHOW_MARKER"일 경우 MarkerActivity로 넘어가기
 
     }
 
+    // 내비게이션 이벤트 수집하고, 다른 액티비티로 넘어가는 함
     private fun collectNavigationEvents() {
         lifecycleScope.launch {
-            // STARTED 상태일 때만 수집 (앱이 백그라운드로 가면 중지 -> 자원 절약)
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                Log.d("MainActivity*", "collectNavigationEvents")
                 MessageManager.eventFlow.collect { event ->
-                    handleNavigationEvent(event)
+                    {
+                        Log.d("MainActivity*", "Event received: $event")
+                        when (event) {
+                            "SHOW_MARKER" -> {
+                                val intent = Intent(this@MainActivity, MarkerActivity::class.java)
+                                startActivity(intent)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun handleNavigationEvent(event: String) {
-        when (event) {
-             "SHOW_MARKER" -> {
-                // [네비게이션 처리]
-                 Log.d("MainActivity*", "intent")
-                val intent = Intent(this, MarkerActivity::class.java)
-                startActivity(intent)
-                // 필요시 finish()
+    // WebSocket 연결하는 함수 (WebSocketManager 사용)
+    fun connectWebSocket() {
+        val targetIP = GlobalState.serverIP ?: return
+
+        WebSocketManager.setListener { message ->
+            {
+                runOnUiThread {
+                    Log.d("MainActivity*", "message: $message")
+                    MessageManager.onMessageReceived(message)
+                    updateUI()
+                }
             }
+        }
+
+        WebSocketManager.connect(targetIP) {
+            Log.d("MainActivity*", "connect success")
         }
     }
 
@@ -86,41 +106,12 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    fun connectWebSocket(){
-
-        val targetIP = GlobalState.serverIP ?: return
-
-        WebSocketManager.setListener { message -> runOnUiThread{
-            Log.d("MainActivity*", "message: $message")
-            MessageManager.onMessageReceived(message)
-
-
-            updateUI()
-
-
-        } }
-
-        WebSocketManager.connect(targetIP){
-            Log.d("MainActivity*", "connect success")
-        }
-
-        // data cmd 추출
-        // when()
-    }
-
     fun updateUI() {
         runOnUiThread {
-            // GlobalState에 있는 값을 가져와서 XML(binding)에 꽂아줍니다.
-
-            // 1. 마커 ID 표시
             val id = GlobalState.markerId
-            binding.tvMarkerId.text = id?.toString() ?: "대기중" // null이면 "대기중" 표시
+            binding.tvMarkerId.text = id?.toString() ?: "대기중"
 
-
-            // 3. 비트맵 처리 (이미지뷰가 있다면)
-            // binding.imageView.setImageBitmap(...)
         }
     }
-
 }
 

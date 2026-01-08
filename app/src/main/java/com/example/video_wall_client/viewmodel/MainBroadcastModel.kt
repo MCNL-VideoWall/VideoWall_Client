@@ -1,26 +1,26 @@
 package com.example.video_wall_client.viewmodel
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.net.*
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import java.net.SocketTimeoutException
 
-class MainBroadcastModel: ViewModel(){
+class MainBroadcastModel : ViewModel() {
     private val PORT = 65535
     private val TIMEOUT_MS = 3000
-
     private val _serverIP = MutableLiveData<String>()
     val serverIP: LiveData<String> get() = _serverIP
 
-    fun broadcastMessage(msg: String){
-        viewModelScope.launch(Dispatchers.IO){
+    fun broadcastMessage(msg: String) {
+        viewModelScope.launch(Dispatchers.IO) {
             var socket: DatagramSocket? = null
-
-
             socket = DatagramSocket()
             socket.broadcast = true
             socket.soTimeout = TIMEOUT_MS
@@ -29,7 +29,10 @@ class MainBroadcastModel: ViewModel(){
             val address = InetAddress.getByName("255.255.255.255")
             val packet = DatagramPacket(data, data.size, address, PORT)
 
-            Log.d("com.example.video_wall_client.viewmodel.MainBroadcastModel", "sendBroadcastMessage: $msg")
+            Log.d(
+                "com.example.video_wall_client.viewmodel.MainBroadcastModel",
+                "sendBroadcastMessage: $msg"
+            )
 
 
             val buffer = ByteArray(1024)
@@ -38,15 +41,15 @@ class MainBroadcastModel: ViewModel(){
             var receivedIP: String? = null
             var message: String? = null
 
-            while(true){
+            while (true) {
                 try {
                     socket.send(packet)
                     socket.receive(receivedPacket)
 
-                    receivedIP= receivedPacket.address.hostAddress
+                    receivedIP = receivedPacket.address.hostAddress
                     message = String(receivedPacket.data, 0, receivedPacket.length)
 
-                    if(!receivedIP.isNullOrEmpty() && message == "VIDEO_WALL_CONNECT_RESPONSE") break
+                    if (!receivedIP.isNullOrEmpty() && message == "VIDEO_WALL_CONNECT_RESPONSE") break
 
                 } catch (e: SocketTimeoutException) {
                     Log.d("Broadcast", "3second. (Timeout)")

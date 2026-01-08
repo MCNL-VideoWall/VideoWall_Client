@@ -1,47 +1,48 @@
 package com.example.video_wall_client.viewmodel
 
 import VideoWallData
-import com.google.gson.Gson
-import org.json.JSONObject
-import org.json.JSONArray
 import android.util.Log
 import com.example.video_wall_client.data.GlobalState
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import org.json.JSONObject
 
-object MessageManager{
+object MessageManager {
 
     private val _eventFlow = MutableSharedFlow<String>(
-        replay = 0,
-        extraBufferCapacity = 1
+        replay = 0, extraBufferCapacity = 1
     )
 
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun onMessageReceived(text: String){
+    fun onMessageReceived(text: String) {
         val jsonObject = JSONObject(text)
 
         val msgType: String = jsonObject["type"].toString()
 
-        when(msgType){
+        when (msgType) {
             "WELCOME" -> {
                 val data = jsonObject.getJSONObject("data").toString()
                 parseWelcomeData(data)
             }
-             "SHOW_MARKER" -> {
-                 Log.d("MessageManager", "SHOW_MARKER")
-                 showMarker()
-             }
-             "START_PLAYBACK" -> {
-                 startPlayback()
-             }
-             "ERROR" -> {
-                 error()
-             }
+
+            "SHOW_MARKER" -> {
+                Log.d("MessageManager", "SHOW_MARKER")
+                showMarker()
+            }
+
+            "START_PLAYBACK" -> {
+                startPlayback()
+            }
+
+            "ERROR" -> {
+                error()
+            }
         }
     }
 
-    fun parseWelcomeData(data: String){
+    fun parseWelcomeData(data: String) {
         try {
             val gson = Gson()
             val response = gson.fromJson(data, VideoWallData::class.java)
@@ -56,13 +57,12 @@ object MessageManager{
 
             Log.d("Parsing", "ID: $id, IP: $ip")
 
-            var markerText: String =""
-            for(i in 0 until bitmap.size) {
+            var markerText: String = ""
+            for (i in 0 until bitmap.size) {
                 for (j in 0 until bitmap[i].size) {
                     markerText += bitmap[i][j].toString()
                 }
             }
-
             Log.d("Parsing", "MarkerText: $markerText")
 
         } catch (e: Exception) {
@@ -70,15 +70,15 @@ object MessageManager{
         }
     }
 
-    fun showMarker(){
+    fun showMarker() {
         _eventFlow.tryEmit("SHOW_MARKER")
     }
 
-    fun startPlayback(){
+    fun startPlayback() {
 
     }
 
-    fun error(){
+    fun error() {
 
     }
 }
