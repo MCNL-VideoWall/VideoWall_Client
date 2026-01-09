@@ -1,5 +1,6 @@
 package com.example.video_wall_client.activity
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
@@ -7,8 +8,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.video_wall_client.data.GlobalState
 import com.example.video_wall_client.databinding.ActivityMarkerBinding
+import com.example.video_wall_client.viewmodel.MessageManager
+import kotlinx.coroutines.launch
 
 class MarkerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMarkerBinding
@@ -26,6 +32,22 @@ class MarkerActivity : AppCompatActivity() {
         if (rawData != null) {
             val originBitmap = createBitmapFromMatrix(rawData)
             binding.imgMarker.setImageBitmap(originBitmap)
+        }
+
+        collectNavigationEvents()
+    }
+
+    private fun collectNavigationEvents() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                MessageManager.eventFlow.collect { event ->
+                    if (event == "START_PLAYBACK") {
+                        val intent = Intent(this@MarkerActivity, VideoActivity::class.java)
+                        startActivity(intent)
+                        finish() // 마커 화면은 종료 (뒤로가기 방지용, 필요시 제거)
+                    }
+                }
+            }
         }
     }
 

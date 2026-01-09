@@ -55,8 +55,8 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation ("com.google.code.gson:gson:2.10.1")
 
-    //Exoplayer 관련
-    implementation("androidx.media3:media3-exoplayer:1.2.0")
-    implementation("androidx.media3:media3-exoplayer-dash:1.2.0")
-    implementation("androidx.media3:media3-ui:1.2.0")
+    // 🚨 [필수] Media3 (ExoPlayer) 라이브러리 (HLS 지원 포함)
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
+    implementation("androidx.media3:media3-datasource:1.3.1") // ← 1.3.1로 통일!
 }

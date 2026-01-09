@@ -77,7 +77,7 @@ object MessageManager {
     }
 
     fun startPlayback() {
-
+        _eventFlow.tryEmit("START_PLAYBACK")
     }
 
     fun error() {
