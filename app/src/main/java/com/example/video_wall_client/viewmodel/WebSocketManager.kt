@@ -9,6 +9,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 object WebSocketManager {
+    const val TAG = "WebSocketManager*"
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient()
     private val PORT = 8000
@@ -19,26 +20,26 @@ object WebSocketManager {
         onMessageListener = listener
     }
 
+    // WebSocket 연결을 시작하는 함수
     fun connect(url: String, onConnect: () -> Unit) {
-        Log.d("SocketManager", "url: $url, uuid: ${GlobalState.clientUuid}")
+        Log.d(TAG, "url: $url, uuid: ${GlobalState.clientUuid}")
         val request = Request.Builder().url("ws://$url:$PORT/ws/${GlobalState.clientUuid}").build()
         val listener = object : WebSocketListener() {
             override fun onOpen(ws: WebSocket, response: Response) {
                 webSocket = ws
-                Log.d("SocketManager", "connect success")
+                Log.d(TAG, "connect success")
                 onConnect()
             }
 
+            // 메시지가 왔을 때 동작하는 콜백 함수
             override fun onMessage(ws: WebSocket, text: String) {
-                Log.d("SocketManager", "message: $text")
-
-                // JSON 메시지 type별 분류
+                Log.d(TAG, "message: $text")
                 MessageManager.onMessageReceived(text)
                 onMessageListener?.invoke(text)
             }
 
             override fun onFailure(ws: WebSocket, t: Throwable, response: Response?) {
-                Log.d("SocketManager", "failure: ${t.message}")
+                Log.d(TAG, "failure: ${t.message}")
                 webSocket = null
             }
         }
@@ -46,7 +47,7 @@ object WebSocketManager {
     }
 
     fun sendMessage(json: String) {
-        webSocket?.send(json) ?: Log.e("SocketManager", "WebSocket is not connected")
+        webSocket?.send(json) ?: Log.e(TAG, "WebSocket is not connected")
     }
 
     fun disconnet() {
